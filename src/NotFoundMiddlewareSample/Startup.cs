@@ -70,6 +70,7 @@ namespace NotFoundMiddlewareSample
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
             var logger = loggerFactory.CreateLogger<Startup>();
+            app.UseNotFoundPageMiddleware();
             app.UseNotFoundMiddleware();
             if (env.IsDevelopment())
             {
