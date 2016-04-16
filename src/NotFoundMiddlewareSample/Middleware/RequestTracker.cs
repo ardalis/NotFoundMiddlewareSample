@@ -26,6 +26,14 @@ namespace NotFoundMiddlewareSample.Middleware
         public IEnumerable<NotFoundRequest> ListRequests()
         {
             return _requests.ToArray();
-        } 
+        }
+
+        public string GetCorrectedPath(string path)
+        {
+            var lowerPath = path.ToLowerInvariant();
+            return _requests.FirstOrDefault(r => r.Path == lowerPath)?.CorrectedPath;
+        }
     }
+
+    
 }

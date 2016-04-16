@@ -28,15 +28,19 @@ namespace NotFoundMiddlewareSample.Middleware
         {
             string path = httpContext.Request.Path;
             _logger.LogVerbose("Path: {path}");
-            if (path == "/nothere")
-            {
-                httpContext.Request.Path = "/home/index"; // rewrite the path
+            string correctedPath = _requestTracker.GetCorrectedPath(path);
+            if(correctedPath != null)
+            { 
+                httpContext.Request.Path = correctedPath; // rewrite the path
+                // OR
+                // Send 301 response with correctedPath
             }
             await _next(httpContext);
             if (httpContext.Response.StatusCode == 404)
             {
                 _logger.LogVerbose("Sending 404");
                 _requestTracker.Record(httpContext.Request.Path); // NOTE: might not be same as original path at this point
+
                 _logger.LogVerbose("NotFound Requests;Count");
                 if (_logger.IsEnabled(LogLevel.Verbose))
                 {
@@ -44,6 +48,11 @@ namespace NotFoundMiddlewareSample.Middleware
                     foreach (var request in requests)
                     {
                         _logger.LogVerbose($"{request.Path}; {request.Count}");
+                        // test code
+                        if (request.Count > 3)
+                        {
+                            request.SetCorrectedPath("/");
+                        }
                     }
                 }
             }
