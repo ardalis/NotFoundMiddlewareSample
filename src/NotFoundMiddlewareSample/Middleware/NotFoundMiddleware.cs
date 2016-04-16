@@ -1,9 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace NotFoundMiddlewareSample.Middleware
@@ -12,12 +12,15 @@ namespace NotFoundMiddlewareSample.Middleware
     public class NotFoundMiddleware
     {
         private readonly RequestDelegate _next;
+        private readonly RequestTracker _requestTracker;
         private readonly ILogger _logger;
 
         public NotFoundMiddleware(RequestDelegate next,
-            ILoggerFactory loggerFactory)
+            ILoggerFactory loggerFactory,
+            RequestTracker requestTracker)
         {
             _next = next;
+            _requestTracker = requestTracker;
             _logger = loggerFactory.CreateLogger<NotFoundMiddleware>();
         }
 
@@ -33,6 +36,16 @@ namespace NotFoundMiddlewareSample.Middleware
             if (httpContext.Response.StatusCode == 404)
             {
                 _logger.LogVerbose("Sending 404");
+                _requestTracker.Record(httpContext.Request.Path); // NOTE: might not be same as original path at this point
+                _logger.LogVerbose("NotFound Requests;Count");
+                if (_logger.IsEnabled(LogLevel.Verbose))
+                {
+                    var requests = _requestTracker.ListRequests().OrderByDescending(r => r.Count);
+                    foreach (var request in requests)
+                    {
+                        _logger.LogVerbose($"{request.Path}; {request.Count}");
+                    }
+                }
             }
         }
     }
@@ -43,6 +56,11 @@ namespace NotFoundMiddlewareSample.Middleware
         public static IApplicationBuilder UseNotFoundMiddleware(this IApplicationBuilder builder)
         {
             return builder.UseMiddleware<NotFoundMiddleware>();
+        }
+
+        public static IServiceCollection AddNotFoundMiddleware(this IServiceCollection services)
+        {
+            return services.AddSingleton<RequestTracker>();
         }
     }
 }

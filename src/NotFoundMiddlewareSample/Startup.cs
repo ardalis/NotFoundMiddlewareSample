@@ -57,6 +57,8 @@ namespace NotFoundMiddlewareSample
 
             services.AddMvc();
 
+            services.AddNotFoundMiddleware();
+
             // Add application services.
             services.AddTransient<IEmailSender, AuthMessageSender>();
             services.AddTransient<ISmsSender, AuthMessageSender>();
