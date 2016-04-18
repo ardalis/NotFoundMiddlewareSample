@@ -69,6 +69,7 @@ namespace NotFoundMiddlewareSample.Middleware
 
         public static IServiceCollection AddNotFoundMiddleware(this IServiceCollection services)
         {
+            services.AddSingleton<INotFoundRequestRepository, InMemoryNotFoundRequestRepository>();
             return services.AddSingleton<RequestTracker>();
         }
     }

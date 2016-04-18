@@ -4,7 +4,7 @@
     {
         public NotFoundRequest(string path)
         {
-            Path = path;
+            Path = path.ToLowerInvariant();
         }
 
         public string Path { get; }

@@ -1,16 +1,22 @@
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Data.Entity.Design;
 
 namespace NotFoundMiddlewareSample.Middleware
 {
     public class RequestTracker
     {
-        // TODO: Pull out a repository for this
-        private static List<NotFoundRequest> _requests = new List<NotFoundRequest>();
+        private readonly INotFoundRequestRepository _repo;
+
+        public RequestTracker(INotFoundRequestRepository repo)
+        {
+            _repo = repo;
+        }
+
         public void Record(string path)
         {
             var lowerPath = path.ToLowerInvariant();
-            NotFoundRequest request = _requests.FirstOrDefault(r => r.Path == lowerPath);
+            var request = _repo.GetByPath(lowerPath);
             if (request != null)
             {
                 request.IncrementCount();
@@ -19,21 +25,28 @@ namespace NotFoundMiddlewareSample.Middleware
             {
                 request = new NotFoundRequest(lowerPath);
                 request.IncrementCount();
-                _requests.Add(request);
+                _repo.Add(request);
             }
         }
 
         public IEnumerable<NotFoundRequest> ListRequests()
         {
-            return _requests.ToArray();
+            return _repo.List();
+        }
+
+        public NotFoundRequest GetRequest(string path)
+        {
+            return _repo.GetByPath(path);
         }
 
         public string GetCorrectedPath(string path)
         {
-            var lowerPath = path.ToLowerInvariant();
-            return _requests.FirstOrDefault(r => r.Path == lowerPath)?.CorrectedPath;
+            return GetRequest(path)?.CorrectedPath;
+        }
+
+        public void UpdateRequest(NotFoundRequest request)
+        {
+            _repo.Update(request);
         }
     }
-
-    
 }
