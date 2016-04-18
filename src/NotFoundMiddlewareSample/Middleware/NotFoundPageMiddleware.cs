@@ -245,7 +245,7 @@ color: orange;
                 }
                 else
                 { // TODO: UrlEncode request.Path
-                    WriteLiteral(@"<td><input type=""text"" /><a href=""?path=" + request.Path + @"&fixedPath="" class=""fixLink"">Save</a></td>");
+                    WriteLiteral(@"<td><input type=""text"" />&nbsp;<a href=""?path=" + request.Path + @"&fixedPath="" class=""fixLink"">Save</a></td>");
                 }
                 WriteLiteral("</tr>");
             }

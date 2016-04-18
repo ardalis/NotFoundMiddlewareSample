@@ -42,19 +42,6 @@ namespace NotFoundMiddlewareSample.Middleware
                 _requestTracker.Record(httpContext.Request.Path); // NOTE: might not be same as original path at this point
 
                 _logger.LogVerbose("NotFound Requests;Count");
-                if (_logger.IsEnabled(LogLevel.Verbose))
-                {
-                    var requests = _requestTracker.ListRequests().OrderByDescending(r => r.Count);
-                    foreach (var request in requests)
-                    {
-                        _logger.LogVerbose($"{request.Path}; {request.Count}");
-                        // test code
-                        if (request.Count > 3)
-                        {
-                            request.SetCorrectedPath("/");
-                        }
-                    }
-                }
             }
         }
     }
