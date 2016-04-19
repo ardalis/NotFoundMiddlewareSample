@@ -1,12 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Cryptography;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Http.Headers;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.OptionsModel;
 
 namespace NotFoundMiddlewareSample.Middleware
 {
@@ -15,32 +14,35 @@ namespace NotFoundMiddlewareSample.Middleware
         private readonly RequestDelegate _next;
         private readonly RequestTracker _requestTracker;
         private readonly ILogger _logger;
+        private readonly NotFoundMiddlewareOptions _options;
 
         public NotFoundPageMiddleware(RequestDelegate next,
             ILoggerFactory loggerFactory,
-            RequestTracker requestTracker)
+            RequestTracker requestTracker,
+            IOptions<NotFoundMiddlewareOptions> options)
         {
             _next = next;
             _requestTracker = requestTracker;
             _logger = loggerFactory.CreateLogger<NotFoundPageMiddleware>();
+            _options = options.Value;
         }
 
-        public async Task Invoke(HttpContext httpContext)
-        {
-            if (!httpContext.Request.Path.StartsWithSegments("/fix404s"))
-            {
-                await _next(httpContext);
-                return;
-            }
-            if (httpContext.Request.Query.Keys.Contains("path") &&
-                httpContext.Request.Query.Keys.Contains("fixedpath"))
-            {
-                var request = _requestTracker.GetRequest(httpContext.Request.Query["path"]);
-                request.SetCorrectedPath(httpContext.Request.Query["fixedpath"]);
-            }
-            Render404List(httpContext);
-
-        }
+public async Task Invoke(HttpContext httpContext)
+{
+    if (!httpContext.Request.Path.StartsWithSegments(_options.Path))
+    {
+        await _next(httpContext);
+        return;
+    }
+    if (httpContext.Request.Query.Keys.Contains("path") &&
+        httpContext.Request.Query.Keys.Contains("fixedpath"))
+    {
+        var request = _requestTracker.GetRequest(httpContext.Request.Query["path"]);
+        request.SetCorrectedPath(httpContext.Request.Query["fixedpath"]);
+        _requestTracker.UpdateRequest(request);
+    }
+    Render404List(httpContext);
+}
 
         private async void Render404List(HttpContext httpContext)
         {

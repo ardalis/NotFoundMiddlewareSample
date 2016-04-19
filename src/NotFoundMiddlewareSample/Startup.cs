@@ -29,9 +29,6 @@ namespace NotFoundMiddlewareSample
             {
                 // For more details on using the user secret store see http://go.microsoft.com/fwlink/?LinkID=532709
                 builder.AddUserSecrets();
-
-                // This will push telemetry data through Application Insights pipeline faster, allowing you to view results immediately.
-                builder.AddApplicationInsightsSettings(developerMode: true);
             }
 
             builder.AddEnvironmentVariables();
@@ -43,9 +40,6 @@ namespace NotFoundMiddlewareSample
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            // Add framework services.
-            services.AddApplicationInsightsTelemetry(Configuration);
-
             services.AddEntityFramework()
                 .AddSqlServer()
                 .AddDbContext<ApplicationDbContext>(options =>
@@ -58,6 +52,7 @@ namespace NotFoundMiddlewareSample
             services.AddMvc();
 
             services.AddNotFoundMiddleware();
+            services.Configure<NotFoundMiddlewareOptions>(Configuration.GetSection("NotFoundMiddleware"));
 
             // Add application services.
             services.AddTransient<IEmailSender, AuthMessageSender>();

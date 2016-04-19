@@ -1,52 +1,44 @@
 using System.Collections.Generic;
-using System.Linq;
-using Microsoft.Data.Entity.Design;
 
 namespace NotFoundMiddlewareSample.Middleware
 {
-    public class RequestTracker
+public class RequestTracker
+{
+    private readonly INotFoundRequestRepository _repo;
+
+    public RequestTracker(INotFoundRequestRepository repo)
     {
-        private readonly INotFoundRequestRepository _repo;
+        _repo = repo;
+    }
 
-        public RequestTracker(INotFoundRequestRepository repo)
+    public void Record(string path)
+    {
+        var request = _repo.GetByPath(path);
+        if (request != null)
         {
-            _repo = repo;
+            request.IncrementCount();
         }
-
-        public void Record(string path)
+        else
         {
-            var lowerPath = path.ToLowerInvariant();
-            var request = _repo.GetByPath(lowerPath);
-            if (request != null)
-            {
-                request.IncrementCount();
-            }
-            else
-            {
-                request = new NotFoundRequest(lowerPath);
-                request.IncrementCount();
-                _repo.Add(request);
-            }
-        }
-
-        public IEnumerable<NotFoundRequest> ListRequests()
-        {
-            return _repo.List();
-        }
-
-        public NotFoundRequest GetRequest(string path)
-        {
-            return _repo.GetByPath(path);
-        }
-
-        public string GetCorrectedPath(string path)
-        {
-            return GetRequest(path)?.CorrectedPath;
-        }
-
-        public void UpdateRequest(NotFoundRequest request)
-        {
-            _repo.Update(request);
+            request = new NotFoundRequest(path);
+            request.IncrementCount();
+            _repo.Add(request);
         }
     }
+
+    public IEnumerable<NotFoundRequest> ListRequests()
+    {
+        return _repo.List();
+    }
+
+    public NotFoundRequest GetRequest(string path)
+    {
+        return _repo.GetByPath(path);
+    }
+
+    public void UpdateRequest(NotFoundRequest request)
+    {
+        _repo.Update(request);
+    }
+}
 }
