@@ -15,7 +15,8 @@ namespace NotFoundMiddlewareSample.Middleware
 
         public NotFoundRequest GetByPath(string path)
         {
-            return _dbContext.NotFoundRequests.FirstOrDefault(r => r.Path == path);
+            return _dbContext.NotFoundRequests
+                .FirstOrDefault(r => r.Path == path.ToLowerInvariant());
         }
 
         public IEnumerable<NotFoundRequest> List()
@@ -25,7 +26,7 @@ namespace NotFoundMiddlewareSample.Middleware
 
         public void Update(NotFoundRequest notFoundRequest)
         {
-            _dbContext.Entry<NotFoundRequest>(notFoundRequest).State = EntityState.Modified;
+            _dbContext.Entry(notFoundRequest).State = EntityState.Modified;
             _dbContext.SaveChanges();
         }
 

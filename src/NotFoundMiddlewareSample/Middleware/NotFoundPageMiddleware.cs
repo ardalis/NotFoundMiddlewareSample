@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.ApplicationInsights.AspNet.Extensions;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 using Microsoft.Extensions.Logging;
@@ -27,22 +28,23 @@ namespace NotFoundMiddlewareSample.Middleware
             _options = options.Value;
         }
 
-public async Task Invoke(HttpContext httpContext)
-{
-    if (!httpContext.Request.Path.StartsWithSegments(_options.Path))
-    {
-        await _next(httpContext);
-        return;
-    }
-    if (httpContext.Request.Query.Keys.Contains("path") &&
-        httpContext.Request.Query.Keys.Contains("fixedpath"))
-    {
-        var request = _requestTracker.GetRequest(httpContext.Request.Query["path"]);
-        request.SetCorrectedPath(httpContext.Request.Query["fixedpath"]);
-        _requestTracker.UpdateRequest(request);
-    }
-    Render404List(httpContext);
-}
+        public async Task Invoke(HttpContext httpContext)
+        {
+            if (!httpContext.Request.Path.StartsWithSegments(_options.Path) ||
+                !httpContext.Connection.IsLocal)
+            {
+                await _next(httpContext);
+                return;
+            }
+            if (httpContext.Request.Query.Keys.Contains("path") &&
+                httpContext.Request.Query.Keys.Contains("fixedpath"))
+            {
+                var request = _requestTracker.GetRequest(httpContext.Request.Query["path"]);
+                request.SetCorrectedPath(httpContext.Request.Query["fixedpath"]);
+                _requestTracker.UpdateRequest(request);
+            }
+            Render404List(httpContext);
+        }
 
         private async void Render404List(HttpContext httpContext)
         {
@@ -241,7 +243,7 @@ color: orange;
             {
                 WriteLiteral(@"<tr class=""requestRow"">");
                 WriteLiteral($"<td>{request.Path}</td><td>{request.Count}</td>");
-                if(!String.IsNullOrEmpty(request.CorrectedPath))
+                if (!String.IsNullOrEmpty(request.CorrectedPath))
                 {
                     WriteLiteral($"<td>{ request.CorrectedPath}</td>");
                 }

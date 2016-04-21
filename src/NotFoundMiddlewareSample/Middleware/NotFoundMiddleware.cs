@@ -10,37 +10,39 @@ using Microsoft.Data.Entity;
 namespace NotFoundMiddlewareSample.Middleware
 {
     // You may need to install the Microsoft.AspNet.Http.Abstractions package into your project
-public class NotFoundMiddleware
-{
-    private readonly RequestDelegate _next;
-    private readonly RequestTracker _requestTracker;
-    private readonly ILogger _logger;
-    private NotFoundMiddlewareOptions _options;
-
-    public NotFoundMiddleware(RequestDelegate next,
-        ILoggerFactory loggerFactory,
-        RequestTracker requestTracker,
-        IOptions<NotFoundMiddlewareOptions> options)
+    public class NotFoundMiddleware
     {
-        _next = next;
-        _requestTracker = requestTracker;
-        _logger = loggerFactory.CreateLogger<NotFoundMiddleware>();
-        _options = options.Value;
-    }
+        private readonly RequestDelegate _next;
+        private readonly RequestTracker _requestTracker;
+        private readonly ILogger _logger;
+        private NotFoundMiddlewareOptions _options;
+
+        public NotFoundMiddleware(RequestDelegate next,
+            ILoggerFactory loggerFactory,
+            RequestTracker requestTracker,
+            IOptions<NotFoundMiddlewareOptions> options)
+        {
+            _next = next;
+            _requestTracker = requestTracker;
+            _logger = loggerFactory.CreateLogger<NotFoundMiddleware>();
+            _options = options.Value;
+        }
 
         public async Task Invoke(HttpContext httpContext)
         {
             string path = httpContext.Request.Path;
             _logger.LogVerbose("Path: {path}");
             string correctedPath = _requestTracker.GetRequest(path)?.CorrectedPath;
-            if(correctedPath != null)
+            if (correctedPath != null)
             {
                 if (_options.FixPathBehavior == FixPathBehavior.Redirect)
                 {
-                    httpContext.Response.Redirect(correctedPath, permanent: true);
+                    string fullPath = httpContext.Request.PathBase +
+                                      correctedPath + httpContext.Request.QueryString;
+                    httpContext.Response.Redirect(fullPath, permanent: true);
                     return;
                 }
-                if(_options.FixPathBehavior == FixPathBehavior.Rewrite)
+                if (_options.FixPathBehavior == FixPathBehavior.Rewrite)
                 {
                     httpContext.Request.Path = correctedPath; // rewrite the path
                 }
@@ -67,12 +69,13 @@ public class NotFoundMiddleware
             services.AddSingleton<INotFoundRequestRepository, InMemoryNotFoundRequestRepository>();
             return services.AddSingleton<RequestTracker>();
         }
-        public static IServiceCollection AddNotFoundMiddlewareEntityFramework(this IServiceCollection services, string connectionString)
+        public static IServiceCollection AddNotFoundMiddlewareEntityFramework(
+            this IServiceCollection services, string connectionString)
         {
-                services.AddEntityFramework()
-                    .AddSqlServer()
-                    .AddDbContext<NotFoundMiddlewareDbContext>(options =>
-                        options.UseSqlServer(connectionString));
+            services.AddEntityFramework()
+                .AddSqlServer()
+                .AddDbContext<NotFoundMiddlewareDbContext>(options =>
+                    options.UseSqlServer(connectionString));
 
             services.AddSingleton<INotFoundRequestRepository, EfNotFoundRequestRepository>();
             return services.AddSingleton<RequestTracker>();

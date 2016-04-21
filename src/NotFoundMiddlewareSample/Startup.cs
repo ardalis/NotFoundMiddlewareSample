@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNet.Builder;
+﻿using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Identity.EntityFramework;
 using Microsoft.Data.Entity;
@@ -63,9 +59,21 @@ namespace NotFoundMiddlewareSample
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
+//app.Use(async (context, next) =>
+//{
+//    context.Response.Headers.Add("Author", "Steve Smith");
+//    await next.Invoke();
+//});
+//app.Run(async context =>
+//{
+//    await context.Response.WriteAsync("Hello world ");
+//});
+
+
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
             var logger = loggerFactory.CreateLogger<Startup>();
+
             app.UseNotFoundPageMiddleware();
             app.UseNotFoundMiddleware();
             if (env.IsDevelopment())
