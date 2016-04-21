@@ -7,7 +7,11 @@
             Path = path.ToLowerInvariant();
         }
 
-        public string Path { get; }
+        public NotFoundRequest()
+        {
+            
+        }
+        public string Path { get; private set; }
         public int Count { get; private set; }
         public string CorrectedPath { get; private set; }
 

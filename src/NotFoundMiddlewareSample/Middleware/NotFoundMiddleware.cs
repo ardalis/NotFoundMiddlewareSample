@@ -1,11 +1,11 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.OptionsModel;
+using NotFoundMiddlewareSample.Models;
+using Microsoft.Data.Entity;
 
 namespace NotFoundMiddlewareSample.Middleware
 {
@@ -62,9 +62,19 @@ public class NotFoundMiddleware
             return builder.UseMiddleware<NotFoundMiddleware>();
         }
 
-        public static IServiceCollection AddNotFoundMiddleware(this IServiceCollection services)
+        public static IServiceCollection AddNotFoundMiddlewareInMemory(this IServiceCollection services)
         {
             services.AddSingleton<INotFoundRequestRepository, InMemoryNotFoundRequestRepository>();
+            return services.AddSingleton<RequestTracker>();
+        }
+        public static IServiceCollection AddNotFoundMiddlewareEntityFramework(this IServiceCollection services, string connectionString)
+        {
+                services.AddEntityFramework()
+                    .AddSqlServer()
+                    .AddDbContext<NotFoundMiddlewareDbContext>(options =>
+                        options.UseSqlServer(connectionString));
+
+            services.AddSingleton<INotFoundRequestRepository, EfNotFoundRequestRepository>();
             return services.AddSingleton<RequestTracker>();
         }
     }

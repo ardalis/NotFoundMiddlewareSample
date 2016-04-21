@@ -51,7 +51,8 @@ namespace NotFoundMiddlewareSample
 
             services.AddMvc();
 
-            services.AddNotFoundMiddleware();
+            //services.AddNotFoundMiddlewareInMemory();
+            services.AddNotFoundMiddlewareEntityFramework(Configuration["Data:DefaultConnection:ConnectionString"]);
             services.Configure<NotFoundMiddlewareOptions>(Configuration.GetSection("NotFoundMiddleware"));
 
             // Add application services.
