@@ -30,8 +30,7 @@ namespace NotFoundMiddlewareSample.Middleware
 
         public async Task Invoke(HttpContext httpContext)
         {
-            if (!httpContext.Request.Path.StartsWithSegments(_options.Path) ||
-                !httpContext.Connection.IsLocal)
+            if (!httpContext.Request.Path.StartsWithSegments(_options.Path))
             {
                 await _next(httpContext);
                 return;
