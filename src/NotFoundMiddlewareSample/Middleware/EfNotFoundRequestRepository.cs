@@ -1,6 +1,6 @@
 using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore;
 using System.Linq;
-using Microsoft.Data.Entity;
 
 namespace NotFoundMiddlewareSample.Middleware
 {

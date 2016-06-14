@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace NotFoundMiddlewareSample.ViewModels.Manage
+﻿namespace NotFoundMiddlewareSample.ViewModels.Manage
 {
     public class FactorViewModel
     {

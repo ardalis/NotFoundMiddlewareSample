@@ -4,10 +4,9 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Text;
+using System.Text.Encodings.Web;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Diagnostics.Views;
-using Microsoft.AspNet.Http;
-using Microsoft.Extensions.WebEncoders;
+using Microsoft.AspNetCore.Http;
 
 namespace NotFoundMiddlewareSample.Middleware
 {
@@ -114,88 +113,89 @@ namespace NotFoundMiddlewareSample.Middleware
             AttributeEnding = null;
         }
 
-        /// <summary>
-        /// Writes the given attribute to the given writer
-        /// </summary>
-        /// <param name="writer">The <see cref="TextWriter"/> instance to write to.</param>
-        /// <param name="name">The name of the attribute to write</param>
-        /// <param name="leader">The value of the prefix</param>
-        /// <param name="trailer">The value of the suffix</param>
-        /// <param name="values">The <see cref="AttributeValue"/>s to write.</param>
-        protected void WriteAttributeTo(
-            TextWriter writer,
-            string name,
-            string leader,
-            string trailer,
-            params AttributeValue[] values)
-        {
-            if (writer == null)
-            {
-                throw new ArgumentNullException(nameof(writer));
-            }
+        ///// <summary>
+        ///// Writes the given attribute to the given writer
+        ///// </summary>
+        ///// <param name="writer">The <see cref="TextWriter"/> instance to write to.</param>
+        ///// <param name="name">The name of the attribute to write</param>
+        ///// <param name="leader">The value of the prefix</param>
+        ///// <param name="trailer">The value of the suffix</param>
+        ///// <param name="values">The <see cref="Microsoft.AspNetCore.DiagnosticsViewPage.Views.AttributeValue"/>s to write.</param>
+        //protected void WriteAttributeTo(
+        //    TextWriter writer,
+        //    string name,
+        //    string leader,
+        //    string trailer,
+        //    params Microsoft.AspNetCore.DiagnosticsViewPage.Views.AttributeValue[] values)
+        // See bug https://github.com/aspnet/Diagnostics/issues/295
+        //{
+        //    if (writer == null)
+        //    {
+        //        throw new ArgumentNullException(nameof(writer));
+        //    }
 
-            if (name == null)
-            {
-                throw new ArgumentNullException(nameof(name));
-            }
+        //    if (name == null)
+        //    {
+        //        throw new ArgumentNullException(nameof(name));
+        //    }
 
-            if (leader == null)
-            {
-                throw new ArgumentNullException(nameof(leader));
-            }
+        //    if (leader == null)
+        //    {
+        //        throw new ArgumentNullException(nameof(leader));
+        //    }
 
-            if (trailer == null)
-            {
-                throw new ArgumentNullException(nameof(trailer));
-            }
+        //    if (trailer == null)
+        //    {
+        //        throw new ArgumentNullException(nameof(trailer));
+        //    }
 
 
-            WriteLiteralTo(writer, leader);
-            foreach (var value in values)
-            {
-                WriteLiteralTo(writer, value.Prefix);
+        //    WriteLiteralTo(writer, leader);
+        //    foreach (var value in values)
+        //    {
+        //        WriteLiteralTo(writer, value.Prefix);
 
-                // The special cases here are that the value we're writing might already be a string, or that the
-                // value might be a bool. If the value is the bool 'true' we want to write the attribute name
-                // instead of the string 'true'. If the value is the bool 'false' we don't want to write anything.
-                // Otherwise the value is another object (perhaps an HtmlString) and we'll ask it to format itself.
-                string stringValue;
-                if (value.Value is bool)
-                {
-                    if ((bool)value.Value)
-                    {
-                        stringValue = name;
-                    }
-                    else
-                    {
-                        continue;
-                    }
-                }
-                else
-                {
-                    stringValue = value.Value as string;
-                }
+        //        // The special cases here are that the value we're writing might already be a string, or that the
+        //        // value might be a bool. If the value is the bool 'true' we want to write the attribute name
+        //        // instead of the string 'true'. If the value is the bool 'false' we don't want to write anything.
+        //        // Otherwise the value is another object (perhaps an HtmlString) and we'll ask it to format itself.
+        //        string stringValue;
+        //        if (value.Value is bool)
+        //        {
+        //            if ((bool)value.Value)
+        //            {
+        //                stringValue = name;
+        //            }
+        //            else
+        //            {
+        //                continue;
+        //            }
+        //        }
+        //        else
+        //        {
+        //            stringValue = value.Value as string;
+        //        }
 
-                // Call the WriteTo(string) overload when possible
-                if (value.Literal && stringValue != null)
-                {
-                    WriteLiteralTo(writer, stringValue);
-                }
-                else if (value.Literal)
-                {
-                    WriteLiteralTo(writer, value.Value);
-                }
-                else if (stringValue != null)
-                {
-                    WriteTo(writer, stringValue);
-                }
-                else
-                {
-                    WriteTo(writer, value.Value);
-                }
-            }
-            WriteLiteralTo(writer, trailer);
-        }
+        //        // Call the WriteTo(string) overload when possible
+        //        if (value.Literal && stringValue != null)
+        //        {
+        //            WriteLiteralTo(writer, stringValue);
+        //        }
+        //        else if (value.Literal)
+        //        {
+        //            WriteLiteralTo(writer, value.Value);
+        //        }
+        //        else if (stringValue != null)
+        //        {
+        //            WriteTo(writer, stringValue);
+        //        }
+        //        else
+        //        {
+        //            WriteTo(writer, value.Value);
+        //        }
+        //    }
+        //    WriteLiteralTo(writer, trailer);
+        //}
 
         /// <summary>
         /// Convert to string and html encode
@@ -218,8 +218,8 @@ namespace NotFoundMiddlewareSample.Middleware
         /// <summary>
         /// <see cref="HelperResult.WriteTo(TextWriter)"/> is invoked
         /// </summary>
-        /// <param name="result">The <see cref="HelperResult"/> to invoke</param>
-        protected void Write(HelperResult result)
+        /// <param name="result">The <see cref="Microsoft.AspNetCore.Mvc.Razor.HelperResult"/> to invoke</param>
+        protected void Write(Microsoft.AspNetCore.Mvc.Razor.HelperResult result)
         {
             WriteTo(Output, result);
         }
@@ -238,10 +238,10 @@ namespace NotFoundMiddlewareSample.Middleware
         {
             if (value != null)
             {
-                var helperResult = value as HelperResult;
+                var helperResult = value as Microsoft.AspNetCore.Mvc.Razor.HelperResult;
                 if (helperResult != null)
                 {
-                    helperResult.WriteTo(writer);
+                    helperResult.WriteTo(writer, HtmlEncoder);
                 }
                 else
                 {
@@ -257,7 +257,7 @@ namespace NotFoundMiddlewareSample.Middleware
         /// <param name="value">The <see cref="string"/> to write.</param>
         protected void WriteTo(TextWriter writer, string value)
         {
-            WriteLiteralTo(writer, HtmlEncoder.HtmlEncode(value));
+            WriteLiteralTo(writer, HtmlEncoder.Encode(value));
         }
 
         /// <summary>
