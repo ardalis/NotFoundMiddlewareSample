@@ -1,11 +1,10 @@
 ﻿using System.Threading.Tasks;
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Http;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.OptionsModel;
-using NotFoundMiddlewareSample.Models;
-using Microsoft.Data.Entity;
+using Microsoft.Extensions.Options;
 
 namespace NotFoundMiddlewareSample.Middleware
 {
@@ -31,7 +30,7 @@ namespace NotFoundMiddlewareSample.Middleware
         public async Task Invoke(HttpContext httpContext)
         {
             string path = httpContext.Request.Path;
-            _logger.LogVerbose("Path: {path}");
+            _logger.LogTrace("Path: {path}");
             string correctedPath = _requestTracker.GetRequest(path)?.CorrectedPath;
             if (correctedPath != null)
             {
@@ -72,10 +71,9 @@ namespace NotFoundMiddlewareSample.Middleware
         public static IServiceCollection AddNotFoundMiddlewareEntityFramework(
             this IServiceCollection services, string connectionString)
         {
-            services.AddEntityFramework()
-                .AddSqlServer()
-                .AddDbContext<NotFoundMiddlewareDbContext>(options =>
-                    options.UseSqlServer(connectionString));
+            services.AddDbContext<NotFoundMiddlewareDbContext>(options =>
+                options.UseSqlServer(connectionString));
+
 
             services.AddSingleton<INotFoundRequestRepository, EfNotFoundRequestRepository>();
             return services.AddSingleton<RequestTracker>();
