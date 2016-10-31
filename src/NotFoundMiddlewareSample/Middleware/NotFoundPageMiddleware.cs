@@ -46,7 +46,8 @@ namespace NotFoundMiddlewareSample.Middleware
 
         private async void Render404List(HttpContext httpContext)
         {
-            var model = _requestTracker.ListRequests().OrderByDescending(r => r.Count);
+            var model = _requestTracker.ListRequests()
+                .OrderByDescending(r => r.Count);
             var requestPage = new RequestPage(model);
             await requestPage.ExecuteAsync(httpContext);
         }

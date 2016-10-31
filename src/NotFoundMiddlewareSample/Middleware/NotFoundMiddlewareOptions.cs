@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace NotFoundMiddlewareSample.Middleware
+﻿namespace NotFoundMiddlewareSample.Middleware
 {
     public enum FixPathBehavior
     {

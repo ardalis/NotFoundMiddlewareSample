@@ -38,11 +38,13 @@ namespace NotFoundMiddlewareSample.Middleware
                 {
                     string fullPath = httpContext.Request.PathBase +
                                       correctedPath + httpContext.Request.QueryString;
+                    _logger.LogTrace("Redirecting to: {fullPath}");
                     httpContext.Response.Redirect(fullPath, permanent: true);
                     return;
                 }
                 if (_options.FixPathBehavior == FixPathBehavior.Rewrite)
                 {
+                    _logger.LogTrace("Rewriting path to: {correctedPath}");
                     httpContext.Request.Path = correctedPath; // rewrite the path
                 }
                 // throw invalid operation exception
@@ -50,6 +52,7 @@ namespace NotFoundMiddlewareSample.Middleware
             await _next(httpContext);
             if (httpContext.Response.StatusCode == 404)
             {
+                _logger.LogTrace("Recording 404: {httpContext.Request.Path}");
                 _requestTracker.Record(httpContext.Request.Path); // NOTE: might not be same as original path at this point
             }
         }
@@ -73,7 +76,6 @@ namespace NotFoundMiddlewareSample.Middleware
         {
             services.AddDbContext<NotFoundMiddlewareDbContext>(options =>
                 options.UseSqlServer(connectionString));
-
 
             services.AddSingleton<INotFoundRequestRepository, EfNotFoundRequestRepository>();
             return services.AddSingleton<RequestTracker>();

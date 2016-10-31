@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 
 namespace NotFoundMiddlewareSample.Middleware
@@ -8,7 +7,6 @@ namespace NotFoundMiddlewareSample.Middleware
         private readonly INotFoundRequestRepository _repo;
         private static object _lock = new object();
 
-
         public RequestTracker(INotFoundRequestRepository repo)
         {
             _repo = repo;
@@ -16,16 +14,17 @@ namespace NotFoundMiddlewareSample.Middleware
 
         public void Record(string path)
         {
+            string lowerPath = path.ToLowerInvariant();
             lock (_lock)
             {
-                var request = _repo.GetByPath(path);
+                var request = _repo.GetByPath(lowerPath);
                 if (request != null)
                 {
                     request.IncrementCount();
                 }
                 else
                 {
-                    request = new NotFoundRequest(path);
+                    request = new NotFoundRequest(lowerPath);
                     request.IncrementCount();
                     _repo.Add(request);
                 }

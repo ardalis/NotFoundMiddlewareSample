@@ -9,10 +9,9 @@ namespace NotFoundMiddlewareSample.Middleware
 
         public NotFoundRequest GetByPath(string path)
         {
-            var lowerPath = path.ToLowerInvariant();
-            if (_requests.ContainsKey(lowerPath))
+            if (_requests.ContainsKey(path))
             {
-                return _requests[lowerPath];
+                return _requests[path];
             }
             return null;
         }
@@ -24,11 +23,9 @@ namespace NotFoundMiddlewareSample.Middleware
 
         public void Update(NotFoundRequest notFoundRequest)
         {
-            var lowerPath = notFoundRequest.Path;
-
-            if (_requests.ContainsKey(lowerPath))
+            if (_requests.ContainsKey(notFoundRequest.Path))
             {
-                _requests[lowerPath] = notFoundRequest;
+                _requests[notFoundRequest.Path] = notFoundRequest;
             }
         }
 

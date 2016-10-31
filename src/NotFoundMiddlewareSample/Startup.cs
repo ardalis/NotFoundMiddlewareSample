@@ -31,7 +31,8 @@ namespace NotFoundMiddlewareSample
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-
+            #region Application-Specific Stuff
+            // Add Application Services
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
 
@@ -39,61 +40,43 @@ namespace NotFoundMiddlewareSample
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
 
-
             services.AddMvc();
+            #endregion
 
-            //services.AddNotFoundMiddlewareInMemory();
-            services.AddNotFoundMiddlewareEntityFramework(Configuration.GetConnectionString("DefaultConnection"));
+            // Configure NotFound Middleware Services (last one wins if multiple)
+            services.AddNotFoundMiddlewareInMemory();
+            //services.AddNotFoundMiddlewareEntityFramework(Configuration.GetConnectionString("DefaultConnection"));
+
+            // Add NotFound Middleware Config Options
             services.Configure<NotFoundMiddlewareOptions>(Configuration.GetSection("NotFoundMiddleware"));
 
+            #region Add other application services
             // Add application services.
             services.AddTransient<IEmailSender, AuthMessageSender>();
-            services.AddTransient<ISmsSender, AuthMessageSender>();
+            services.AddScoped<ISmsSender, AuthMessageSender>();
+            services.AddSingleton<ISmsSender, AuthMessageSender>();
+            #endregion
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
-//app.Use(async (context, next) =>
-//{
-//    context.Response.Headers.Add("Author", "Steve Smith");
-//    await next.Invoke();
-//});
-//app.Run(async context =>
-//{
-//    await context.Response.WriteAsync("Hello world ");
-//});
-
-
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
-            var logger = loggerFactory.CreateLogger<Startup>();
 
             app.UseNotFoundPageMiddleware();
+
             app.UseNotFoundMiddleware();
+
             if (env.IsDevelopment())
             {
-                app.UseBrowserLink();
-                logger.LogTrace("In development mode - configuring error pages");
+                //app.UseBrowserLink();
                 app.UseDeveloperExceptionPage();
                 app.UseDatabaseErrorPage();
             }
             else
             {
-                logger.LogTrace("In release mode - configuring exception handler");
                 app.UseExceptionHandler("/Home/Error");
-
-                // For more details on creating database during deployment see http://go.microsoft.com/fwlink/?LinkID=615859
-                try
-                {
-                    using (var serviceScope = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>()
-                        .CreateScope())
-                    {
-                        serviceScope.ServiceProvider.GetService<ApplicationDbContext>()
-                             .Database.Migrate();
-                    }
-                }
-                catch { }
             }
 
             app.UseStaticFiles();
@@ -101,8 +84,6 @@ namespace NotFoundMiddlewareSample
             app.UseStatusCodePages();
 
             app.UseIdentity();
-
-            // To configure external authentication please see http://go.microsoft.com/fwlink/?LinkID=532715
 
             app.UseMvc(routes =>
             {

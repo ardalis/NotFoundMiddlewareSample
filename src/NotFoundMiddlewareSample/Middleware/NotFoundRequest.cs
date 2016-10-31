@@ -4,6 +4,7 @@
     {
         public NotFoundRequest(string path)
         {
+            // assumes case insensitive paths
             Path = path.ToLowerInvariant();
         }
 
